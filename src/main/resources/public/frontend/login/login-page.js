@@ -4,18 +4,23 @@
 */
 const BASE_URL = "http://localhost:8081"; // backend URL
 
-/* 
+/*
  * TODO: Get references to DOM elements
  * - username input
  * - password input
  * - login button
  * - logout button (optional, for token testing)
  */
+const usernameInput = document.getElementById("login-input");
+const passwordInput = document.getElementById("password-input");
+const loginButton = document.getElementById("login-button");
+const logoutButton = document.getElementById("logout-button");
 
-/* 
+/*
  * TODO: Add click event listener to login button
  * - Call processLogin on click
  */
+loginButton.onclick = processLogin;
 
 
 /**
@@ -40,10 +45,18 @@ const BASE_URL = "http://localhost:8081"; // backend URL
  * - Use `window.location.href` for redirection
  */
 async function processLogin() {
-    // TODO: Retrieve username and password from input fields
-    // - Trim input and validate that neither is empty
+    // Retrieve username and password from input fields
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value.trim();
 
-    // TODO: Create a requestBody object with username and password
+    // Validate that neither is empty
+    if (!username || !password) {
+        alert("Please enter both username and password!");
+        return;
+    }
+
+    // Create a requestBody object with username and password
+    const requestBody = { username, password };
 
     const requestOptions = {
         method: "POST",
@@ -61,28 +74,48 @@ async function processLogin() {
     };
 
     try {
-        // TODO: Send POST request to http://localhost:8081/login using fetch with requestOptions
+        // Send POST request to http://localhost:8081/login using fetch with requestOptions
+        const response = await fetch(`${BASE_URL}/login`, requestOptions);
 
-        // TODO: If response status is 200
-        // - Read the response as text
-        // - Response will be a space-separated string: "token123 true"
-        // - Split the string into token and isAdmin flag
-        // - Store both in sessionStorage using sessionStorage.setItem()
+        // If response status is 200
+        if (response.status === 200) {
+            // Read the response as text
+            const responseText = await response.text();
 
-        // TODO: Optionally show the logout button if applicable
+            // Response will be a space-separated string: "token123 true"
+            // Split the string into token and isAdmin flag
+            const parts = responseText.split(" ");
+            const token = parts[0];
+            const isAdmin = parts[1];
 
-        // TODO: Add a small delay (e.g., 500ms) using setTimeout before redirecting
-        // - Use window.location.href to redirect to the recipe page
+            // Store both in sessionStorage using sessionStorage.setItem()
+            sessionStorage.setItem("auth-token", token);
+            sessionStorage.setItem("is-admin", isAdmin);
 
-        // TODO: If response status is 401
-        // - Alert the user with "Incorrect login!"
+            // Optionally show the logout button if applicable
+            if (logoutButton) {
+                logoutButton.style.display = "block";
+            }
 
-        // TODO: For any other status code
-        // - Alert the user with a generic error like "Unknown issue!"
-
+            // Add a small delay (e.g., 500ms) using setTimeout before redirecting
+            setTimeout(() => {
+                // Use window.location.href to redirect to the recipe page
+                window.location.href = "../recipe/recipe-page.html";
+            }, 500);
+        } else if (response.status === 401) {
+            // If response status is 401
+            // Alert the user with "Incorrect login!"
+            alert("Incorrect login!");
+        } else {
+            // For any other status code
+            // Alert the user with a generic error like "Unknown issue!"
+            alert("Unknown issue!");
+        }
     } catch (error) {
-        // TODO: Handle any network or unexpected errors
-        // - Log the error and alert the user
+        // Handle any network or unexpected errors
+        // Log the error and alert the user
+        console.error("Login error:", error);
+        alert("An error occurred during login. Please try again.");
     }
 }
 
