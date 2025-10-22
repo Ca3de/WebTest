@@ -72,7 +72,6 @@ async function addIngredient() {
         if (response.ok) {
             addIngredientNameInput.value = "";
             await getIngredients();
-            refreshIngredientList();
         } else {
             alert("Failed to add ingredient");
         }
@@ -155,7 +154,6 @@ async function deleteIngredient() {
         if (response.ok) {
             deleteIngredientNameInput.value = "";
             await getIngredients();
-            refreshIngredientList();
         } else {
             alert("Failed to delete ingredient");
         }
