@@ -84,9 +84,9 @@ async function processLogin() {
 
             // Response will be a space-separated string: "token123 true"
             // Split the string into token and isAdmin flag
-            const parts = responseText.split(" ");
+            const parts = responseText.trim().split(" ");
             const token = parts[0];
-            const isAdmin = parts[1];
+            const isAdmin = parts[1] || "false"; // Default to "false" if not provided
 
             // Store both in sessionStorage using sessionStorage.setItem()
             sessionStorage.setItem("auth-token", token);

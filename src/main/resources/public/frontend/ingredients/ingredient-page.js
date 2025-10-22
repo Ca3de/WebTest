@@ -5,50 +5,51 @@
 const BASE_URL = "http://localhost:8081"; // backend URL
 
 /*
- * TODO: Get references to various DOM elements
- * - addIngredientNameInput
- * - deleteIngredientNameInput
- * - ingredientListContainer
- * - searchInput (optional for future use)
- * - adminLink (if visible conditionally)
- */
-const addIngredientNameInput = document.getElementById("add-ingredient-name-input");
-const deleteIngredientNameInput = document.getElementById("delete-ingredient-name-input");
-const ingredientListContainer = document.getElementById("ingredient-list");
-const addIngredientButton = document.getElementById("add-ingredient-submit-button");
-const deleteIngredientButton = document.getElementById("delete-ingredient-submit-button");
-
-/*
- * TODO: Attach 'onclick' events to:
- * - "add-ingredient-submit-button" → addIngredient()
- * - "delete-ingredient-submit-button" → deleteIngredient()
- */
-addIngredientButton.onclick = addIngredient;
-deleteIngredientButton.onclick = deleteIngredient;
-
-/*
  * TODO: Create an array to keep track of ingredients
  */
 let ingredients = [];
 
-/*
- * TODO: On page load, call getIngredients()
- */
-getIngredients();
+// Wait for DOM to fully load before accessing elements
+window.addEventListener("DOMContentLoaded", () => {
+    /*
+     * TODO: Get references to various DOM elements
+     * - addIngredientNameInput
+     * - deleteIngredientNameInput
+     * - ingredientListContainer
+     * - searchInput (optional for future use)
+     * - adminLink (if visible conditionally)
+     */
+    const addIngredientNameInput = document.getElementById("add-ingredient-name-input");
+    const deleteIngredientNameInput = document.getElementById("delete-ingredient-name-input");
+    const ingredientListContainer = document.getElementById("ingredient-list");
+    const addIngredientButton = document.getElementById("add-ingredient-submit-button");
+    const deleteIngredientButton = document.getElementById("delete-ingredient-submit-button");
 
+    /*
+     * TODO: Attach 'onclick' events to:
+     * - "add-ingredient-submit-button" → addIngredient()
+     * - "delete-ingredient-submit-button" → deleteIngredient()
+     */
+    addIngredientButton.onclick = addIngredient;
+    deleteIngredientButton.onclick = deleteIngredient;
 
-/**
- * TODO: Add Ingredient Function
- *
- * Requirements:
- * - Read and trim value from addIngredientNameInput
- * - Validate input is not empty
- * - Send POST request to /ingredients
- * - Include Authorization token from sessionStorage
- * - On success: clear input, call getIngredients() and refreshIngredientList()
- * - On failure: alert the user
- */
-async function addIngredient() {
+    /*
+     * TODO: On page load, call getIngredients()
+     */
+    getIngredients();
+
+    /**
+     * TODO: Add Ingredient Function
+     *
+     * Requirements:
+     * - Read and trim value from addIngredientNameInput
+     * - Validate input is not empty
+     * - Send POST request to /ingredients
+     * - Include Authorization token from sessionStorage
+     * - On success: clear input, call getIngredients() and refreshIngredientList()
+     * - On failure: alert the user
+     */
+    async function addIngredient() {
     try {
         const name = addIngredientNameInput.value.trim();
 
@@ -82,17 +83,16 @@ async function addIngredient() {
     }
 }
 
-
-/**
- * TODO: Get Ingredients Function
- *
- * Requirements:
- * - Fetch all ingredients from backend
- * - Store result in `ingredients` array
- * - Call refreshIngredientList() to display them
- * - On error: alert the user
- */
-async function getIngredients() {
+    /**
+     * TODO: Get Ingredients Function
+     *
+     * Requirements:
+     * - Fetch all ingredients from backend
+     * - Store result in `ingredients` array
+     * - Call refreshIngredientList() to display them
+     * - On error: alert the user
+     */
+    async function getIngredients() {
     try {
         const token = sessionStorage.getItem("auth-token");
 
@@ -115,19 +115,18 @@ async function getIngredients() {
     }
 }
 
-
-/**
- * TODO: Delete Ingredient Function
- *
- * Requirements:
- * - Read and trim value from deleteIngredientNameInput
- * - Search ingredientListContainer's <li> elements for matching name
- * - Determine ID based on index (or other backend logic)
- * - Send DELETE request to /ingredients/{id}
- * - On success: call getIngredients() and refreshIngredientList(), clear input
- * - On failure or not found: alert the user
- */
-async function deleteIngredient() {
+    /**
+     * TODO: Delete Ingredient Function
+     *
+     * Requirements:
+     * - Read and trim value from deleteIngredientNameInput
+     * - Search ingredientListContainer's <li> elements for matching name
+     * - Determine ID based on index (or other backend logic)
+     * - Send DELETE request to /ingredients/{id}
+     * - On success: call getIngredients() and refreshIngredientList(), clear input
+     * - On failure or not found: alert the user
+     */
+    async function deleteIngredient() {
     try {
         const name = deleteIngredientNameInput.value.trim();
 
@@ -165,18 +164,17 @@ async function deleteIngredient() {
     }
 }
 
-
-/**
- * TODO: Refresh Ingredient List Function
- *
- * Requirements:
- * - Clear ingredientListContainer
- * - Loop through `ingredients` array
- * - For each ingredient:
- *   - Create <li> and inner <p> with ingredient name
- *   - Append to container
- */
-function refreshIngredientList() {
+    /**
+     * TODO: Refresh Ingredient List Function
+     *
+     * Requirements:
+     * - Clear ingredientListContainer
+     * - Loop through `ingredients` array
+     * - For each ingredient:
+     *   - Create <li> and inner <p> with ingredient name
+     *   - Append to container
+     */
+    function refreshIngredientList() {
     // Clear ingredientListContainer
     ingredientListContainer.innerHTML = "";
 
@@ -192,3 +190,5 @@ function refreshIngredientList() {
         ingredientListContainer.appendChild(li);
     });
 }
+
+});  // End of DOMContentLoaded event listener
