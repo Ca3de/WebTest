@@ -34,7 +34,9 @@ let ingredients = [];
 /*
  * TODO: On page load, call getIngredients()
  */
-getIngredients();
+if (sessionStorage.getItem("auth-token")) {
+    getIngredients();
+}
 
 
 /**
