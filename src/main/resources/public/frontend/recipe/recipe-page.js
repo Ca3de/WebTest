@@ -130,7 +130,6 @@ async function addRecipe() {
             addRecipeNameInput.value = "";
             addRecipeInstructionsInput.value = "";
             await getRecipes();
-            refreshRecipeList();
         } else {
             alert("Failed to add recipe");
         }
@@ -181,7 +180,6 @@ async function updateRecipe() {
             updateRecipeNameInput.value = "";
             updateRecipeInstructionsInput.value = "";
             await getRecipes();
-            refreshRecipeList();
         } else {
             alert("Failed to update recipe");
         }
@@ -226,7 +224,6 @@ async function deleteRecipe() {
         if (response.ok) {
             deleteRecipeNameInput.value = "";
             await getRecipes();
-            refreshRecipeList();
         } else {
             alert("Failed to delete recipe");
         }
