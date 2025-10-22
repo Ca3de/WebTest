@@ -148,10 +148,32 @@ public class RecipeController {
         try {
             // Parse the recipe ID from the path parameter
             int id = Integer.parseInt(ctx.pathParam("id"));
-            
+
+            // Get the authenticated chef from the token
+            Chef chef = authService.getChefFromSessionToken(ctx.header("Authorization").split(" ")[1]);
+            if (chef == null) {
+                ctx.status(401).result("Unauthorized.");
+                return;
+            }
+
+            // Get the recipe to check ownership
+            Optional<Recipe> recipeOpt = recipeService.findRecipe(id);
+            if (!recipeOpt.isPresent()) {
+                ctx.status(404).result("Recipe not found.");
+                return;
+            }
+
+            Recipe recipe = recipeOpt.get();
+
+            // Check if the chef is the owner or an admin
+            if (recipe.getAuthor() != null && recipe.getAuthor().getId() != chef.getId() && !chef.isAdmin()) {
+                ctx.status(403).result("Forbidden: You can only delete your own recipes.");
+                return;
+            }
+
             // Attempt to delete the recipe
             boolean deleted = recipeService.deleteRecipe(id);
-    
+
             // Handle the result of the deletion
             if (deleted) {
                 ctx.status(200).result("Recipe deleted successfully.");
