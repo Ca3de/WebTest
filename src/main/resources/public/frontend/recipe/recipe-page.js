@@ -62,7 +62,9 @@ logoutButton.onclick = processLogout;
 /*
  * TODO: On page load, call getRecipes() to populate the list
  */
-getRecipes();
+if (sessionStorage.getItem("auth-token")) {
+    getRecipes();
+}
 
 
 /**
