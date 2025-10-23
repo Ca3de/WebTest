@@ -1,11 +1,14 @@
 package com.revature.service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 import com.revature.model.Chef;
+
+
+// NOTE: This file is part of the backend implementation. No changes are required.
 
 
 /**
@@ -20,10 +23,11 @@ public class AuthenticationService {
      * The service used for managing Chef objects and their operations.
      */
 
-        private ChefService chefService;
-
-        /** A map that keeps track of currently logged in users, indexed by session token. */
-        public static final Map<String, Chef> loggedInUsers = new ConcurrentHashMap<>();
+	 @SuppressWarnings("unused")
+	 private ChefService chefService;
+ 
+	 /** A map that keeps track of currently logged in users, indexed by session token. */
+	 public static Map<String, Chef> loggedInUsers = new HashMap<>();
  
 	 /**
 	  * Constructs an AuthenticationService with the specified ChefService.
@@ -31,10 +35,10 @@ public class AuthenticationService {
 	 * (FOR REFERENCE) This method is part of the backend logic.
      * No modifications or implementations are required.
 	  */
-        public AuthenticationService(ChefService chefService) {
-                this.chefService = chefService;
-                loggedInUsers.clear();
-        }
+	 public AuthenticationService(ChefService chefService) {
+		 this.chefService = chefService;
+		 loggedInUsers = new HashMap<>();
+	 }
 
 	/**
 	 * Authenticates a chef by verifying the provided credentials. If successful, a session token is generated and stored in the logged in users map.
