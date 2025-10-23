@@ -117,21 +117,24 @@ public class RecipeController {
      * No modifications or implementations are required.
      */
     public Handler createRecipe = ctx -> {
-        Chef chef = authService.getChefFromSessionToken(ctx.header("Authorization").split(" ")[1]);
+        String token = extractToken(ctx);
+        if (token == null) {
+            ctx.status(401).result("Missing or invalid authorization token");
+            return;
+        }
+
+        Chef chef = authService.getChefFromSessionToken(token);
         if (chef == null) {
-			ctx.status(401);
-		} else {
+            ctx.status(401).result("Unauthorized");
+            return;
+        }
 
-			Recipe recipe = ctx.bodyAsClass(Recipe.class);
+        Recipe recipe = ctx.bodyAsClass(Recipe.class);
+        recipe.setId(0);
+        recipe.setAuthor(chef);
+        recipeService.saveRecipe(recipe);
 
-			recipe.setId(0);
-			
-			recipe.setAuthor(chef);
-			recipeService.saveRecipe(recipe);
-
-			ctx.status(201);
-
-		}
+        ctx.status(201);
     };
 
     /**
@@ -198,6 +201,22 @@ public class RecipeController {
      * (FOR REFERENCE) This method is part of the backend logic.
      * No modifications or implementations are required by candidates.
      */
+
+    private String extractToken(Context ctx) {
+        String header = ctx.header("Authorization");
+        if (header == null || header.isBlank()) {
+            return null;
+        }
+
+        String[] parts = header.trim().split("\\s+");
+        if (parts.length == 1) {
+            return parts[0];
+        } else if (parts.length >= 2) {
+            return parts[1];
+        }
+
+        return null;
+    }
 
     private <T> T getParamAsClassOrElse(Context ctx, String queryParam, Class<T> clazz, T defaultValue) {
         String paramValue = ctx.queryParam(queryParam);
