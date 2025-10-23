@@ -5,6 +5,8 @@
 const BASE_URL = "http://localhost:8081"; // backend URL
 
 let recipes = [];
+let allRecipes = [];
+let lastSearchTerm = "";
 
 /*
  * TODO: Get references to various DOM elements
@@ -67,7 +69,7 @@ if (sessionStorage.getItem("auth-token")) {
 }
 
 async function ensureRecipesLoaded() {
-    if (!recipes.length) {
+    if (!allRecipes.length) {
         await getRecipes(true);
     }
 }
@@ -82,22 +84,20 @@ async function ensureRecipesLoaded() {
  */
 async function searchRecipes() {
     try {
-        const searchTerm = searchInput.value.trim();
+        const searchTerm = searchInput.value.trim().toLowerCase();
+        lastSearchTerm = searchTerm;
 
-        const token = sessionStorage.getItem("auth-token");
-        const response = await fetch(`${BASE_URL}/recipes?name=${encodeURIComponent(searchTerm)}`, {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${token}`
-            }
-        });
+        await ensureRecipesLoaded();
 
-        if (response.ok) {
-            recipes = await response.json();
-            refreshRecipeList();
+        if (!searchTerm) {
+            recipes = [...allRecipes];
         } else {
-            alert("Failed to search recipes");
+            recipes = allRecipes.filter(recipe =>
+                recipe.name && recipe.name.toLowerCase().includes(searchTerm)
+            );
         }
+
+        refreshRecipeList();
     } catch (error) {
         console.error("Search error:", error);
         alert("An error occurred while searching recipes");
@@ -137,6 +137,7 @@ async function addRecipe() {
         if (response.ok) {
             addRecipeNameInput.value = "";
             addRecipeInstructionsInput.value = "";
+            lastSearchTerm = "";
             await getRecipes();
         } else {
             alert("Failed to add recipe");
@@ -168,14 +169,14 @@ async function updateRecipe() {
         await ensureRecipesLoaded();
 
         // Find the recipe by name
-        const recipe = recipes.find(r => r.name === name);
+        const recipe = allRecipes.find(r => r.name === name);
         if (!recipe) {
             alert("Recipe not found");
             return;
         }
 
         const token = sessionStorage.getItem("auth-token");
-        const updateBody = { instructions: newInstructions };
+        const updateBody = { ...recipe, instructions: newInstructions };
 
         const response = await fetch(`${BASE_URL}/recipes/${recipe.id}`, {
             method: "PUT",
@@ -189,6 +190,7 @@ async function updateRecipe() {
         if (response.ok) {
             updateRecipeNameInput.value = "";
             updateRecipeInstructionsInput.value = "";
+            lastSearchTerm = "";
             await getRecipes();
         } else {
             alert("Failed to update recipe");
@@ -218,7 +220,7 @@ async function deleteRecipe() {
         await ensureRecipesLoaded();
 
         // Find the recipe by name
-        const recipe = recipes.find(r => r.name === name);
+        const recipe = allRecipes.find(r => r.name === name);
         if (!recipe) {
             alert("Recipe not found");
             return;
@@ -235,6 +237,7 @@ async function deleteRecipe() {
 
         if (response.ok) {
             deleteRecipeNameInput.value = "";
+            lastSearchTerm = "";
             await getRecipes();
         } else {
             alert("Failed to delete recipe");
@@ -263,8 +266,20 @@ async function getRecipes(silent = false) {
         });
 
         if (response.ok) {
-            recipes = await response.json();
-            refreshRecipeList();
+            allRecipes = await response.json();
+
+            if (lastSearchTerm) {
+                recipes = allRecipes.filter(recipe =>
+                    recipe.name && recipe.name.toLowerCase().includes(lastSearchTerm)
+                );
+            } else {
+                recipes = [...allRecipes];
+            }
+
+            if (!silent) {
+                refreshRecipeList();
+            }
+
             return recipes;
         } else {
             if (!silent) {
