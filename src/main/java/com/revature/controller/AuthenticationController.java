@@ -90,14 +90,21 @@ public class AuthenticationController {
      * No modifications or implementations are required.
      */
     public void logout(Context ctx) {
-        authService.logout(ctx.header("Authorization").split(" ")[1]);
+        String token = extractToken(ctx);
+        if (token == null) {
+            ctx.status(400).result("Missing or invalid authorization token");
+            return;
+        }
 
-        if (" " != null) {
+        if (AuthenticationService.loggedInUsers.containsKey(token)) {
+            authService.logout(token);
             ctx.status(200).result("Logout successful");
-        } 
+        } else {
+            ctx.status(400).result("Invalid session token");
+        }
     }
 
-    
+
     /**
      * Configures the routes for authentication operations.
      * Sets up routes for registration, login, and logout, and applies the authorization filter to protect specific routes.
@@ -109,5 +116,21 @@ public class AuthenticationController {
         app.post("/register", this::register);
         app.post("/login", this::login);
         app.post("/logout", this::logout);
+    }
+
+    private String extractToken(Context ctx) {
+        String header = ctx.header("Authorization");
+        if (header == null || header.isBlank()) {
+            return null;
+        }
+
+        String[] parts = header.trim().split("\\s+");
+        if (parts.length == 1) {
+            return parts[0];
+        } else if (parts.length >= 2) {
+            return parts[1];
+        }
+
+        return null;
     }
 }
