@@ -38,6 +38,12 @@ if (sessionStorage.getItem("auth-token")) {
     getIngredients();
 }
 
+async function ensureIngredientsLoaded() {
+    if (!ingredients.length) {
+        await getIngredients(true);
+    }
+}
+
 
 /**
  * TODO: Add Ingredient Function
@@ -93,7 +99,7 @@ async function addIngredient() {
  * - Call refreshIngredientList() to display them
  * - On error: alert the user
  */
-async function getIngredients() {
+async function getIngredients(silent = false) {
     try {
         const token = sessionStorage.getItem("auth-token");
 
@@ -107,13 +113,20 @@ async function getIngredients() {
         if (response.ok) {
             ingredients = await response.json();
             refreshIngredientList();
+            return ingredients;
         } else {
-            alert("Failed to fetch ingredients");
+            if (!silent) {
+                alert("Failed to fetch ingredients");
+            }
         }
     } catch (error) {
         console.error("Get ingredients error:", error);
-        alert("An error occurred while fetching ingredients");
+        if (!silent) {
+            alert("An error occurred while fetching ingredients");
+        }
     }
+
+    return ingredients;
 }
 
 
@@ -136,6 +149,8 @@ async function deleteIngredient() {
             alert("Please provide an ingredient name");
             return;
         }
+
+        await ensureIngredientsLoaded();
 
         // Find the ingredient by name
         const ingredient = ingredients.find(i => i.name === name);

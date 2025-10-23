@@ -66,6 +66,12 @@ if (sessionStorage.getItem("auth-token")) {
     getRecipes();
 }
 
+async function ensureRecipesLoaded() {
+    if (!recipes.length) {
+        await getRecipes(true);
+    }
+}
+
 
 /**
  * TODO: Search Recipes Function
@@ -159,6 +165,8 @@ async function updateRecipe() {
             return;
         }
 
+        await ensureRecipesLoaded();
+
         // Find the recipe by name
         const recipe = recipes.find(r => r.name === name);
         if (!recipe) {
@@ -207,6 +215,8 @@ async function deleteRecipe() {
             return;
         }
 
+        await ensureRecipesLoaded();
+
         // Find the recipe by name
         const recipe = recipes.find(r => r.name === name);
         if (!recipe) {
@@ -241,7 +251,7 @@ async function deleteRecipe() {
  * - Store in recipes array
  * - Call refreshRecipeList() to display
  */
-async function getRecipes() {
+async function getRecipes(silent = false) {
     try {
         const token = sessionStorage.getItem("auth-token");
 
@@ -255,13 +265,20 @@ async function getRecipes() {
         if (response.ok) {
             recipes = await response.json();
             refreshRecipeList();
+            return recipes;
         } else {
-            alert("Failed to fetch recipes");
+            if (!silent) {
+                alert("Failed to fetch recipes");
+            }
         }
     } catch (error) {
         console.error("Get recipes error:", error);
-        alert("An error occurred while fetching recipes");
+        if (!silent) {
+            alert("An error occurred while fetching recipes");
+        }
     }
+
+    return recipes;
 }
 
 /**
