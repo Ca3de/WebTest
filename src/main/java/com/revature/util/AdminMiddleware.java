@@ -1,10 +1,7 @@
 package com.revature.util;
-import java.util.stream.Collectors;
 
-import com.revature.dao.ChefDAO;
 import com.revature.model.Chef;
 import com.revature.service.AuthenticationService;
-import com.revature.service.ChefService;
 
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
@@ -26,12 +23,6 @@ public class AdminMiddleware implements Handler {
      */
 
     private String[] protectedMethods;
-
-    /**
-     * The AuthenticationService instance used for handling authentication-related operations and validation.
-     */
-    @SuppressWarnings("unused")
-    private AuthenticationService authService;
     
 
     /**
@@ -43,7 +34,6 @@ public class AdminMiddleware implements Handler {
 
     public AdminMiddleware(String... protectedMethods) {
         this.protectedMethods = protectedMethods;
-        this.authService = new AuthenticationService(new ChefService(new ChefDAO(new ConnectionUtil())));
     }
 
     /**
@@ -55,17 +45,34 @@ public class AdminMiddleware implements Handler {
     @Override
     public void handle(Context ctx) {
         if (isProtectedMethod(ctx.method().name())) {
-            // Get the token of the current logged in user
-            String token = AuthenticationService.loggedInUsers.keySet().stream().collect(Collectors.joining());
-
-            // Check the corresponding chef and check if they are admin
-            boolean isAdmin = isAdmin(authService.getChefFromSessionToken(token));
-            
-            // If they are not admin, throw an exception
-            if (!isAdmin) {
+            String token = extractToken(ctx);
+            Chef chef = AuthenticationService.loggedInUsers.get(token);
+            if (chef == null || !chef.isAdmin()) {
                 throw new UnauthorizedResponse("Access denied");
-            } 
+            }
         }
+    }
+
+    /**
+     * Extracts the bearer token from the Authorization header on the context.
+     *
+     * @param ctx the current request context
+     * @return the parsed token value
+     */
+    private String extractToken(Context ctx) {
+        String header = ctx.header("Authorization");
+        if (header == null || header.isBlank()) {
+            throw new UnauthorizedResponse("Access denied");
+        }
+
+        String[] parts = header.trim().split("\\s+");
+        if (parts.length == 1) {
+            return parts[0];
+        } else if (parts.length >= 2) {
+            return parts[1];
+        }
+
+        throw new UnauthorizedResponse("Access denied");
     }
 
     /**
@@ -76,22 +83,15 @@ public class AdminMiddleware implements Handler {
      */
     private boolean isProtectedMethod(String method) {
         for (String protectedMethod : protectedMethods) {
-            if (protectedMethod.toString().equalsIgnoreCase(method)) {
+            if (protectedMethod.equalsIgnoreCase(method)) {
                 return true;
             }
-        }
-        return false;
-    }
-
-    /**
-     * Determines if the chef with the specified ID has admin privileges.
-     *
-	 * (FOR REFERENCE) This method is part of the backend logic.
-     * No modifications or implementations are required.
-     */
-    private boolean isAdmin(Chef chef) {
-        if (chef != null) {
-            return chef.isAdmin();
+            if ("CREATE".equalsIgnoreCase(protectedMethod) && "POST".equalsIgnoreCase(method)) {
+                return true;
+            }
+            if ("UPDATE".equalsIgnoreCase(protectedMethod) && "PUT".equalsIgnoreCase(method)) {
+                return true;
+            }
         }
         return false;
     }
